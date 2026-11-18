@@ -1,32 +1,32 @@
-# The kubeconfig has to be provided to the "deploy" stage. A possible option would be to use a GitLab CI/CD Project/Group file variable.
-# For this to work the Terraform providers should point to this file.
+# The kubeconfig has to be provided to the "deploy" stage. One possible option would be to use a GitLab CI/CD project/group file variable.
+# For this to work, the Terraform providers should point to this file.
 
 stages:
   - build
   - deploy
 
-# Set the image name and tag to the local projects container registry
+# Set the image name and tag to the local project's container registry
 variables:
   IMAGE_NAME: "$CI_REGISTRY_IMAGE"
-  IMAGE_TAG: "CI_COMMIT_SHORT_SHA"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
 
-# Build the image and push to the local projects contain registry
+# Build the image and push it to the local project's container registry
 build:
   stage: build
-  # Runs the script and provides docker-cli
+  # Runs the script and provides the Docker CLI
   image: docker:24.0.9
   services:
-    # Contains the docker daemon
+    # Contains the Docker daemon
     - docker:24.0.9-dind
-  # Log into local project container registry
-  # Build image
-  # Push image to local porjects container registry
+  # Log in to the local project's container registry
+  # Build the image
+  # Push the image to the local project's container registry
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - docker build -t "$IMAGE_NAME:$IMAGE_TAG" .
     - docker push "$IMAGE_NAME:$IMAGE_TAG"
 
-# Run terrafomr init and plan. Save plan output as artifact
+# Run Terraform init and plan. Save the plan output as an artifact.
 terraform_plan:
   stage: deploy
   image:
@@ -37,24 +37,21 @@ terraform_plan:
   script:
     - cd "terraform"
     - terraform init
-    - terraform plan \
-        -var="image_name=$IMAGE_NAME" \
-        -var="image_tag=$IMAGE_TAG" \
-        -out=tfplan
+    - terraform plan -var="image_name=$IMAGE_NAME" -var="image_tag=$IMAGE_TAG" -out=tfplan
   artifacts:
     paths:
       - terraform/tfplan
 
-# Allpy Helm Chart with Terraform
+# Apply the Helm chart with Terraform
 terraform_apply:
   stage: deploy
   image:
-    name: automation-container/terraform:1.0.0
-  # Only run after job "terraform_plan" is finished and include artifactes
+    name: hashicorp/terraform:1.17
+  # Only run after the "terraform_plan" job has finished and include its artifacts
   needs:
     - job: terraform_plan
       artifacts: true
-  # Only run when started by user
+  # Only run when manually started by a user
   when: manual
   script:
     - cd "terraform"
