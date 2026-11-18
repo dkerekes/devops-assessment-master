@@ -29,6 +29,14 @@
 - `spec.rules[0].http.paths[0].backend.service.name`: Points to the wrong Service.
 - `spec.rules[0].http.paths[0].backend.service.port.number`: The number is correct, but as in previous cases, a port name is preferable.
 
+### Helm Chart "values.yaml"
+
+- Incuded **nameOverride** option.
+- Replaced the "latest" tag.
+- Added an optional **imagePullSecret** section.
+- Added an optional **serviceAccountName** field.
+- Expanded the configuration  options for **Service** and **Ingress**
+
 ### Terraform
 
 - `resource.kubernetes_namespace.homework.metadata.name`: Replaced the static value with a variable.
