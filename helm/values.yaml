@@ -1,0 +1,31 @@
+nameOverride: ""
+
+replicas: 1
+
+image:
+  repository: myapp
+  # Should never use latest as a tag,
+  # except for som special casses like cronjobs with "imagePullPolicy" set to "Always".
+  # The problems arrise when an image is rebuilt with this same tag and deployed.
+  # Depending the deployment mechanism it can happen that the "new" latest version
+  # will be ignored and nut pulled.
+  tag: 1.0.0
+
+environment: dev
+
+imagePullSecrets: []
+# Example:
+# imagePullSecrets:
+#   - name: my-registry-secret
+
+# Custom serviceAccount name.
+# serviceAccountName: my-app
+
+service:
+  enabled: true
+  port: 8080
+
+ingress:
+  enabled: true
+  host: myapp.local
+  # className: custom-class
